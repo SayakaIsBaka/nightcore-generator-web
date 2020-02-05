@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "ffmpeg.js": "^3.1.9001"
+    "videoconverter": "^0.1.0"
   },
   "devDependencies": {},
   "scripts": {
