@@ -45,13 +45,17 @@ const getRandomImage = async () => {
         xmlDoc = await request(getRequestUrl(page, tag));
         const imageList = xmlDoc.getElementsByTagName("post");
         const imageUrl = imageList[imageId % 100].getAttribute("file_url");
-        return getImage(imageUrl);
+        const image = await getImage(imageUrl);
+        return {
+            name: imageUrl.substring(imageUrl.lastIndexOf('/') + 1),
+            data: new Uint8Array(image)
+        };
     }
 };
 
 const speedupSong = (file, data) => {
     var result = ffmpeg_run({
-        arguments: ["-i", file, "-filter:a", "asetrate=44100*1.25", "-vn", "out.ogg"],
+        arguments: ["-i", file, "-filter:a", "asetrate=44100*1.25", "-vn", "out.wav"],
         files: [{
             name: file,
             data: new Uint8Array(data)
@@ -62,11 +66,27 @@ const speedupSong = (file, data) => {
     return result[0];
 };
 
+const writeVideo = (audio, image) => {
+    var result = ffmpeg_run({
+        arguments: ['-loop', '1', '-i', image.name, '-i', audio.name, '-c:v', 'libx264', '-c:a', 'copy', '-pix_fmt', 'yuv420p', '-shortest', 'nightcore.mp4'],
+        files: [audio, image],
+        stdin: function(){}
+    });
+
+    const video = result[0];
+    if (video === undefined) {
+        alert("Something went wrong")
+    } else {
+        saveData(video.name, video.data);
+    }
+};
+
 const fileSelectHandler = evt => {
     var file = evt.target.files[0];
     file.arrayBuffer().then(async (data) => {
         const audio = speedupSong(file.name, data);
         const image = await getRandomImage();
+        writeVideo(audio, image);
     });
 };
 
