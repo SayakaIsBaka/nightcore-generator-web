@@ -31,7 +31,7 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 }
 
 /*
-https://github.com/Kagami/ffmpeg.js
+https://bgrins.github.io/videoconverter.js/
 https://github.com/browserify/browserify
 https://www.html5rocks.com/en/tutorials/file/dndfiles/
 
