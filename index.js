@@ -1,7 +1,5 @@
 'use strict';
 
-const fs = require("fs");
-
 const saveData = (fileName, data) => {
     var a = document.createElement("a");
     document.body.appendChild(a);
@@ -12,6 +10,37 @@ const saveData = (fileName, data) => {
     a.download = fileName;
     a.click();
     window.URL.revokeObjectURL(url);
+};
+
+const getRequestUrl = (page, tag) => {
+    const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+    return proxyUrl + "https://safebooru.org/index.php?page=dapi&s=post&q=index&pid=" +
+        page + "&tags=width:1920+height:1080+-swimsuit+-feet+-text+score:>=1+" + tag;
+};
+
+const request = async (url) => {
+    let res = await window.fetch(url, {method: "GET", mode: "cors"});
+    let resText = await res.text();
+    return new DOMParser().parseFromString(resText, "text/xml");
+};
+
+const getRandomImage = async () => {
+    const tags = ['looking_at_another', '1girl', 'vocaloid', '1girl+1boy', '2girls'];
+    const tag = tags[Math.floor(Math.random() * tags.length)];
+    let xmlDoc = await request(getRequestUrl(1, tag));
+    
+    const count = xmlDoc.getElementsByTagName('posts')[0].getAttribute('count');
+    if (count === 0) {
+        alert("No suitable images found, reloading...");
+        document.location.reload();
+    } else {
+        const imageId = Math.floor(Math.random() * count) + 1;
+        const page = Math.floor(imageId / 100);
+        xmlDoc = await request(getRequestUrl(page, tag));
+        const imageList = xmlDoc.getElementsByTagName("post");
+        const imageUrl = imageList[imageId % 100].getAttribute("file_url");
+        console.log(imageUrl);
+    }
 };
 
 const speedupSong = (file, data) => {
