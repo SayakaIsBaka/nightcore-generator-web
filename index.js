@@ -1,5 +1,7 @@
 'use strict';
 
+const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+
 const saveData = (fileName, data) => {
     var a = document.createElement("a");
     document.body.appendChild(a);
@@ -13,7 +15,6 @@ const saveData = (fileName, data) => {
 };
 
 const getRequestUrl = (page, tag) => {
-    const proxyUrl = "https://cors-anywhere.herokuapp.com/";
     return proxyUrl + "https://safebooru.org/index.php?page=dapi&s=post&q=index&pid=" +
         page + "&tags=width:1920+height:1080+-swimsuit+-feet+-text+score:>=1+" + tag;
 };
@@ -22,6 +23,11 @@ const request = async (url) => {
     let res = await window.fetch(url, {method: "GET", mode: "cors"});
     let resText = await res.text();
     return new DOMParser().parseFromString(resText, "text/xml");
+};
+
+const getImage = async (url) => {
+    let res = await window.fetch(proxyUrl + url, {method: "GET", mode: "cors"});
+    return await res.arrayBuffer();
 };
 
 const getRandomImage = async () => {
@@ -39,7 +45,7 @@ const getRandomImage = async () => {
         xmlDoc = await request(getRequestUrl(page, tag));
         const imageList = xmlDoc.getElementsByTagName("post");
         const imageUrl = imageList[imageId % 100].getAttribute("file_url");
-        console.log(imageUrl);
+        return getImage(imageUrl);
     }
 };
 
@@ -53,14 +59,14 @@ const speedupSong = (file, data) => {
         stdin: function(){}
     });
 
-    var out = result[0];
-    saveData(out.name, out.data);
+    return result[0];
 };
 
 const fileSelectHandler = evt => {
     var file = evt.target.files[0];
-    file.arrayBuffer().then(function(data) {
-        speedupSong(file.name, data);
+    file.arrayBuffer().then(async (data) => {
+        const audio = speedupSong(file.name, data);
+        const image = await getRandomImage();
     });
 };
 
