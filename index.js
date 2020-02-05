@@ -1,20 +1,24 @@
 'use strict';
 
-const ffmpeg = require("ffmpeg.js/ffmpeg-mp4.js");
 const fs = require("fs");
 
+const createDownloadLink = (file, data) => {
+    const blob = new Blob([data], {type: "audio/mpeg"});
+    const url = URL.createObjectURL(blob);
+    window.location.href = url;
+};
+
 const speedupSong = (file, data) => {
-    var result = ffmpeg({
-        MEMFS: [{
-            name: file,
-            data: data
-        }],
+    var result = ffmpeg_run({
         arguments: ["-i", file, "-filter:a", "asetrate=44100*1.25", "-vn", "out.mp3"],
-        stdin: function() {},
+        files: [{
+            name: file,
+            data: new Uint8Array(data)
+        }],
     });
 
-    var out = result.MEMFS[0];
-    alert(out);
+    var out = result[0];
+    createDownloadLink(out.name, out.data);
 };
 
 const fileSelectHandler = evt => {
