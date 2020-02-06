@@ -53,38 +53,30 @@ const getRandomImage = async () => {
     }
 };
 
-const speedupSong = (file, data) => {
-    var result = ffmpeg_run({
-        arguments: ["-i", file, "-filter:a", "asetrate=44100*1.25", "-vn", "out.wav"],
-        files: [{
-            name: file,
-            data: new Uint8Array(data)
-        }],
-        stdin: function(){}
-    });
-
-    return result[0];
-};
-
 const writeVideo = (audio, image) => {
-    var result = ffmpeg_run({
-        arguments: ['-loop', '1', '-i', image.name, '-ar', 44100 * 1.25, '-f', 's16le', '-i', audio.name, '-strict', '-2', '-c:v', 'libx264', '-c:a', 'aac', '-pix_fmt', 'yuv420p', '-shortest', 'nightcore.mp4'],
+    ffmpeg_run({
+        arguments: ['-i', image.name, '-i', audio.name, '-strict', '-2', '-c:v', 'libx264', "-filter:a", "asetrate=44100*1.25,aresample=44100", '-c:a', 'aac', '-pix_fmt', 'yuv420p', 'nightcore.mp4'],
         files: [audio, image],
-        stdin: function(){}
+        stdin: function(){},
+        TOTAL_MEMORY: 536870912,
+        returnCallback: (result) => {
+            const video = result[0];
+            if (video === undefined) {
+                alert("Something went wrong")
+            } else {
+                saveData(video.name, video.data);
+            }
+        }
     });
-
-    const video = result[0];
-    if (video === undefined) {
-        alert("Something went wrong")
-    } else {
-        saveData(video.name, video.data);
-    }
 };
 
 const fileSelectHandler = evt => {
     var file = evt.target.files[0];
     file.arrayBuffer().then(async (data) => {
-        const audio = speedupSong(file.name, data);
+        const audio = {
+            name: file.name,
+            data: new Uint8Array(data)
+        }
         const image = await getRandomImage();
         writeVideo(audio, image);
     });
@@ -95,11 +87,3 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 } else {
     alert('The File APIs are not fully supported in this browser.');
 }
-
-/*
-https://bgrins.github.io/videoconverter.js/
-https://github.com/browserify/browserify
-https://www.html5rocks.com/en/tutorials/file/dndfiles/
-
-TODO: compile a custom version of ffmpeg.js
-*/
