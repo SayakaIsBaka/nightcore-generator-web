@@ -68,7 +68,7 @@ const speedupSong = (file, data) => {
 
 const writeVideo = (audio, image) => {
     var result = ffmpeg_run({
-        arguments: ['-loop', '1', '-i', image.name, '-ar', 44100 * 1.25, '-ac', '1', '-f', 's16le', '-i', audio.name, '-c:v', 'libx264', '-c:a', 'copy', '-pix_fmt', 'yuv420p', '-shortest', 'nightcore.mp4'],
+        arguments: ['-loop', '1', '-i', image.name, '-ar', 44100 * 1.25, '-f', 's16le', '-i', audio.name, '-strict', '-2', '-c:v', 'libx264', '-c:a', 'aac', '-pix_fmt', 'yuv420p', '-shortest', 'nightcore.mp4'],
         files: [audio, image],
         stdin: function(){}
     });
