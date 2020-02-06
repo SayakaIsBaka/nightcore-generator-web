@@ -3,7 +3,7 @@
 const proxyUrl = "https://cors-anywhere-safebooru.herokuapp.com/";
 
 const saveData = (fileName, data) => {
-    var a = document.createElement("a");
+    const a = document.createElement("a");
     document.body.appendChild(a);
     a.style = "display: none";
     const blob = new Blob([data], {type: "audio/ogg"});
@@ -23,11 +23,6 @@ const request = async (url) => {
     let res = await window.fetch(url, {method: "GET", mode: "cors"});
     let resText = await res.text();
     return new DOMParser().parseFromString(resText, "text/xml");
-};
-
-const getImage = async (url) => {
-    let res = await window.fetch(proxyUrl + url, {method: "GET", mode: "cors"});
-    return await res.arrayBuffer();
 };
 
 const getRandomImage = async () => {
@@ -68,7 +63,7 @@ const writeVideo = (audio, image) => {
 };
 
 const fileSelectHandler = evt => {
-    var file = evt.target.files[0];
+    const file = evt.target.files[0];
     file.arrayBuffer().then(async (data) => {
         const audio = {
             name: file.name,
@@ -80,7 +75,7 @@ const fileSelectHandler = evt => {
 };
 
 const convertImageToCanvas = image => {
-	var canvas = document.getElementById("canvas");
+	const canvas = document.getElementById("canvas");
 	canvas.width = image.width;
 	canvas.height = image.height;
 	canvas.getContext("2d").drawImage(image, 0, 0);
