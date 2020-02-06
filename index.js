@@ -47,7 +47,7 @@ const getRandomImage = async () => {
 
 const writeVideo = (audio, image) => {
     ffmpeg_run({
-        arguments: ['-i', image.name, '-i', audio.name, '-c:v', 'libx264', "-filter:a", "asetrate=44100*1.25,aresample=44100", '-c:a', 'aac', '-pix_fmt', 'yuv420p', 'nightcore.mp4'],
+        arguments: ['-i', image.name, '-i', audio.name, '-c:v', 'libx264', "-filter:a", "asetrate=44100*" + slider.value / 100 + ",aresample=44100", '-c:a', 'aac', '-pix_fmt', 'yuv420p', 'nightcore.mp4'],
         files: [audio, image],
         stdin: function(){},
         TOTAL_MEMORY: 536870912,
@@ -63,7 +63,8 @@ const writeVideo = (audio, image) => {
 };
 
 const fileSelectHandler = evt => {
-    const file = evt.target.files[0];
+    const file = document.getElementById("audioin").files[0];
+    slider.disabled = true;
     file.arrayBuffer().then(async (data) => {
         const audio = {
             name: file.name,
@@ -102,7 +103,15 @@ const makeVideo = (audio, url) => {
 };
 
 if (window.File && window.FileReader && window.FileList && window.Blob) {
-    document.getElementById('audioin').addEventListener('change', fileSelectHandler, false);
+    document.getElementById('start').addEventListener('click', fileSelectHandler, false);
 } else {
     alert('The File APIs are not fully supported in this browser.');
+}
+
+const slider = document.getElementById("rate");
+const output = document.getElementById("rateValue");
+output.innerHTML = 'x' + slider.value / 100;
+
+slider.oninput = function() {
+    output.innerHTML = 'x' + this.value / 100;
 }

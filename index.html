@@ -11,8 +11,11 @@
 
 <body>
     <h1>Nightcore Generator Web</h1>
-    <div>A fully client-side nightcore video generator. Load a file and wait until the video is generated (you can see the status using the developer console).</div>
-    <div><input type="file" id="audioin" name="audioin" accept="audio/mpeg"></div>
+    <div>A fully client-side nightcore video generator. Load a file and wait until the video is generated (you can see the status using the developer console).</div></br>
+    Speed rate (default: x1.25)
+    <input type="range" min="100" max="200" value="125" id="rate"><span id="rateValue"></span>
+    <div><input type="file" id="audioin" name="audioin" accept="audio/mpeg"></div></br>
+    <div><button type="button" id="start">Start</button></div>
     <canvas id="canvas" hidden></canvas>
 </body>
 <script src="ffmpeg-all-codecs.js"></script>
