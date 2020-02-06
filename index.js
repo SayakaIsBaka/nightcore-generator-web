@@ -1,6 +1,6 @@
 'use strict';
 
-const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+const proxyUrl = "https://cors-anywhere-safebooru.herokuapp.com/";
 
 const saveData = (fileName, data) => {
     var a = document.createElement("a");
@@ -45,17 +45,14 @@ const getRandomImage = async () => {
         xmlDoc = await request(getRequestUrl(page, tag));
         const imageList = xmlDoc.getElementsByTagName("post");
         const imageUrl = imageList[imageId % 100].getAttribute("file_url");
-        const image = await getImage(imageUrl);
-        return {
-            name: imageUrl.substring(imageUrl.lastIndexOf('/') + 1),
-            data: new Uint8Array(image)
-        };
+
+        return imageUrl;
     }
 };
 
 const writeVideo = (audio, image) => {
     ffmpeg_run({
-        arguments: ['-i', image.name, '-i', audio.name, '-strict', '-2', '-c:v', 'libx264', "-filter:a", "asetrate=44100*1.25,aresample=44100", '-c:a', 'aac', '-pix_fmt', 'yuv420p', 'nightcore.mp4'],
+        arguments: ['-i', image.name, '-i', audio.name, '-c:v', 'libx264', "-filter:a", "asetrate=44100*1.25,aresample=44100", '-c:a', 'aac', '-pix_fmt', 'yuv420p', 'nightcore.mp4'],
         files: [audio, image],
         stdin: function(){},
         TOTAL_MEMORY: 536870912,
@@ -77,9 +74,36 @@ const fileSelectHandler = evt => {
             name: file.name,
             data: new Uint8Array(data)
         }
-        const image = await getRandomImage();
-        writeVideo(audio, image);
+        const imageUrl = await getRandomImage();
+        makeVideo(audio, imageUrl);
     });
+};
+
+const convertImageToCanvas = image => {
+	var canvas = document.getElementById("canvas");
+	canvas.width = image.width;
+	canvas.height = image.height;
+	canvas.getContext("2d").drawImage(image, 0, 0);
+
+	return canvas;
+};
+
+const makeVideo = (audio, url) => {
+    const img = new Image();
+    img.onload = () => {
+        const canvas = convertImageToCanvas(img);
+        const newImg = new Image();
+        newImg.src = canvas.toBlob(async blob => {
+            const data = await blob.arrayBuffer();
+            const image = {
+                name: url.substring(url.lastIndexOf('/') + 1),
+                data: new Uint8Array(data)
+            };
+            writeVideo(audio, image);
+        }, 'image/jpeg');
+    };
+    img.src = proxyUrl + url;
+    img.crossOrigin = "anonymous";
 };
 
 if (window.File && window.FileReader && window.FileList && window.Blob) {
